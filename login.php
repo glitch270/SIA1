@@ -2,10 +2,16 @@
 session_start();
 header("Content-Type: application/json");
 
-$conn = new mysqli("localhost", "root", "", "unified_scheduling");
+$conn = new mysqli(
+    getenv('MYSQL_HOST'),
+    getenv('MYSQL_USER'),
+    getenv('MYSQL_PASSWORD'),
+    getenv('MYSQL_DATABASE'),
+    (int)getenv('MYSQL_PORT')
+);
 
 if ($conn->connect_error) {
-    echo json_encode(["status" => "error", "message" => "Database connection failed"]);
+    echo json_encode(["status" => "error", "message" => "Database connection failed: " . $conn->connect_error]);
     exit;
 }
 
@@ -24,14 +30,11 @@ $stmt->execute();
 $result = $stmt->get_result();
 
 if ($row = $result->fetch_assoc()) {
-
-    // simple password check (since your DB is plain text)
     if ($password !== $row['password']) {
         echo json_encode(["status" => "error", "message" => "Invalid password"]);
         exit;
     }
 
-    // reset session (prevents role mix issues)
     session_regenerate_id(true);
 
     $_SESSION['user_id'] = $row['user_id'];
