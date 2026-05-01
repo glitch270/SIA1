@@ -5,7 +5,7 @@ include 'db.php';
 $message = '';
 $messageType = '';
 
-// Fix: Get user_id from SESSION or POST (for Vercel serverless)
+// FIX: Get user_id from SESSION first, then POST fallback (for Vercel serverless where sessions are unreliable)
 $created_by = $_SESSION['user_id'] ?? $_POST['user_id'] ?? null;
 
 /* =========================
@@ -32,6 +32,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (isset($_POST['create'])) {
 
+        // FIX: Re-read created_by from POST on each submission (session may be empty on Vercel)
+        $created_by = $_SESSION['user_id'] ?? $_POST['user_id'] ?? null;
+
         $subject   = mysqli_real_escape_string($conn, $_POST['subject']    ?? '');
         $teacher   = mysqli_real_escape_string($conn, $_POST['teacher']    ?? '');
         $day       = mysqli_real_escape_string($conn, $_POST['day']        ?? '');
@@ -41,43 +44,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $section   = mysqli_real_escape_string($conn, $_POST['section']    ?? '');
 
         if (!$created_by) {
-            $message = "You must be logged in.";
-            $messageType = "error";
-
-        } elseif (empty($subject) || empty($teacher) || empty($day) || empty($classroom) || empty($startTime) || empty($endTime) || empty($section)) {
-            $message = "Please complete all fields.";
-            $messageType = "error";
-
-        } elseif ($startTime >= $endTime) {
-            $message = "End time must be after start time.";
+            $message = "Session expired. Please log in again.";
             $messageType = "error";
 
         } else {
-
-            $sql = "INSERT INTO schedule (
-                subject_id, room_id, instructor_id, day,
-                start_time, end_time, created_by, section
-            ) VALUES (
-                '$subject', '$classroom', '$teacher', '$day',
-                '$startTime', '$endTime', '$created_by', '$section'
-            )";
-
-            if (mysqli_query($conn, $sql)) {
-                $newScheduleId = mysqli_insert_id($conn);
-
-                $enrollSql = "
-                    INSERT INTO enrollment (user_id, schedule_id)
-                    SELECT sp.user_id, $newScheduleId
-                    FROM student_profile sp
-                    WHERE sp.section = '$section'
-                ";
-                mysqli_query($conn, $enrollSql);
-
-                $message = "Schedule created successfully!";
-                $messageType = "success";
-            } else {
-                $message = "Error: " . mysqli_error($conn);
+            // FIX: Verify created_by actually exists in users table before inserting
+            $checkUser = mysqli_query($conn, "SELECT user_id FROM users WHERE user_id = '$created_by'");
+            if (mysqli_num_rows($checkUser) === 0) {
+                $message = "Invalid user. Please log in again.";
                 $messageType = "error";
+
+            } elseif (empty($subject) || empty($teacher) || empty($day) || empty($classroom) || empty($startTime) || empty($endTime) || empty($section)) {
+                $message = "Please complete all fields.";
+                $messageType = "error";
+
+            } elseif ($startTime >= $endTime) {
+                $message = "End time must be after start time.";
+                $messageType = "error";
+
+            } else {
+                $sql = "INSERT INTO schedule (
+                    subject_id, room_id, instructor_id, day,
+                    start_time, end_time, created_by, section
+                ) VALUES (
+                    '$subject', '$classroom', '$teacher', '$day',
+                    '$startTime', '$endTime', '$created_by', '$section'
+                )";
+
+                if (mysqli_query($conn, $sql)) {
+                    $newScheduleId = mysqli_insert_id($conn);
+
+                    $enrollSql = "
+                        INSERT INTO enrollment (user_id, schedule_id)
+                        SELECT sp.user_id, $newScheduleId
+                        FROM student_profile sp
+                        WHERE sp.section = '$section'
+                    ";
+                    mysqli_query($conn, $enrollSql);
+
+                    $message = "Schedule created successfully!";
+                    $messageType = "success";
+                } else {
+                    $message = "Error: " . mysqli_error($conn);
+                    $messageType = "error";
+                }
             }
         }
     }
@@ -127,7 +137,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="top-bar"></div>
     <aside class="sidebar">
         <div class="header">
-            <!-- Fix: Use absolute path for image -->
             <img src="/PSU.png" alt="University Logo" class="logo">
             <div class="school-text">
                 <h1>Partido State University</h1>
@@ -136,14 +145,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
         <h2>Schedule Management</h2>
         <nav id="sidebarNav">
-            <!-- Fix: Use absolute paths for links -->
             <a href="/api/administrator_assign_subject.php">Assign subject / teacher / classroom</a>
             <a href="/api/administrator_create_schedule.php" class="active">Create Schedule</a>
             <a href="/api/administrator_view_schedule.php">View Schedule</a>
             <a href="/api/administrator_validate_schedule.php">Validate Schedule</a>
             <a href="/api/administrator_update_schedule.php">Update Schedule</a>
             <a href="/api/administrator_delete_schedule.php">Delete Schedule</a>
-            <button class="btn-logout" onclick="window.location.href='/api/administrator_logout.php'">Log Out</button>
+            <button class="btn-logout" onclick="logout()">Log Out</button>
         </nav>
     </aside>
 
@@ -156,8 +164,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             <?php endif; ?>
 
-            <!-- Fix: Add user_id hidden field for session workaround -->
             <form method="POST" action="">
+                <!-- FIX: Hidden field populated from localStorage so created_by is always sent -->
                 <input type="hidden" name="user_id" id="user_id_field">
                 <script>
                     document.getElementById('user_id_field').value = localStorage.getItem('user_id') || '';
@@ -226,9 +234,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <button type="submit" name="clear" class="clear">Clear</button>
                     <button type="submit" name="create" class="create">Create Schedule</button>
                 </div>
-
             </form>
         </div>
     </div>
+
+    <script>
+        function logout() {
+            // FIX: Clear localStorage on logout
+            localStorage.removeItem('user_id');
+            localStorage.removeItem('role');
+            localStorage.removeItem('full_name');
+            window.location.href = '/api/administrator_logout.php';
+        }
+    </script>
 </body>
 </html>

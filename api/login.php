@@ -37,18 +37,21 @@ if ($row = $result->fetch_assoc()) {
 
     session_regenerate_id(true);
 
-    $_SESSION['user_id'] = $row['user_id'];
-    $_SESSION['role'] = $row['role'];
+    $_SESSION['user_id']  = $row['user_id'];
+    $_SESSION['role']     = $row['role'];
     $_SESSION['full_name'] = $row['full_name'];
 
+    // FIX: Return user_id and full_name so login.js can save them to localStorage
     echo json_encode([
-        "status" => "success",
-        "role" => $row['role']
+        "status"    => "success",
+        "role"      => $row['role'],
+        "user_id"   => $row['user_id'],
+        "full_name" => $row['full_name']
     ]);
 
 } else {
     echo json_encode([
-        "status" => "error",
+        "status"  => "error",
         "message" => "Invalid username"
     ]);
 }
