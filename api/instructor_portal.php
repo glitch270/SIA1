@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Instructor Portal - PSU</title>
-    <link rel="stylesheet" href="instructor_style.css">
+    <link rel="stylesheet" href="/instructor_style.css">
 </head>
 
 <body>
@@ -15,7 +15,8 @@
         <aside class="sidebar">
 
             <div class="brand-container">
-                <img src="PSU.png" alt="Logo" class="logo-img">
+                <!-- Fix: absolute path for logo -->
+                <img src="/PSU.png" alt="Logo" class="logo-img">
                 <div class="brand-text">
                     <strong>Partido State University</strong>
                     <span>Goa, Camarines Sur</span>
@@ -38,13 +39,12 @@
                     View Assigned Class
                 </button>
 
-                <button class="btn-logout" onclick="window.location.href='instructor_logout.php'">Log Out</button>
+                <!-- Fix: absolute path for logout -->
+                <button class="btn-logout" onclick="window.location.href='/api/instructor_logout.php'">Log Out</button>
 
             </nav>
-             
-        </aside>
 
-       
+        </aside>
 
         <main class="main-content">
 
@@ -110,14 +110,11 @@
                         </thead>
 
                         <tbody id="assignedTable">
-
-                            <!-- fallback row -->
                             <tr>
                                 <td colspan="6" style="text-align:center; color:gray;">
                                     Loading assigned classes...
                                 </td>
                             </tr>
-
                         </tbody>
 
                     </table>
@@ -128,6 +125,6 @@
         </main>
     </div>
 
-    <script src="instructor_script.js"></script>
+    <script src="/instructor_script.js"></script>
 </body>
 </html>

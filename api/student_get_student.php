@@ -4,14 +4,14 @@ header("Content-Type: application/json");
 
 require_once "student_db.php";
 
-if (!isset($_SESSION["user_id"])) {
+// Fix: Get user_id from SESSION or GET parameter
+$userId = $_SESSION["user_id"] ?? $_GET["user_id"] ?? null;
+
+if (!$userId) {
     echo json_encode(["status" => "error", "message" => "Not logged in"]);
     exit;
 }
 
-$userId = $_SESSION["user_id"];
-
-// JOIN users + student_profile
 $stmt = $pdo->prepare("
     SELECT 
         u.user_id,

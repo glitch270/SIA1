@@ -5,7 +5,8 @@ include 'db.php';
 $message = '';
 $messageType = '';
 
-$created_by = $_SESSION['user_id'] ?? null;
+// Fix: Get user_id from SESSION or POST (for Vercel serverless)
+$created_by = $_SESSION['user_id'] ?? $_POST['user_id'] ?? null;
 
 /* =========================
    LOAD DROPDOWNS FROM DB
@@ -20,7 +21,6 @@ $teachersResult = mysqli_query($conn, "
 
 $roomsResult = mysqli_query($conn, "SELECT * FROM rooms");
 
-// Load sections from student_profile
 $sectionsResult = mysqli_query($conn, "SELECT DISTINCT section FROM student_profile WHERE section IS NOT NULL ORDER BY section");
 
 $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -65,7 +65,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (mysqli_query($conn, $sql)) {
                 $newScheduleId = mysqli_insert_id($conn);
 
-                // FIX: Auto-enroll all students in the selected section
                 $enrollSql = "
                     INSERT INTO enrollment (user_id, schedule_id)
                     SELECT sp.user_id, $newScheduleId
@@ -128,7 +127,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="top-bar"></div>
     <aside class="sidebar">
         <div class="header">
-            <img src="PSU.png" alt="University Logo" class="logo">
+            <!-- Fix: Use absolute path for image -->
+            <img src="/PSU.png" alt="University Logo" class="logo">
             <div class="school-text">
                 <h1>Partido State University</h1>
                 <p>Goa, Camarines Sur</p>
@@ -136,13 +136,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
         <h2>Schedule Management</h2>
         <nav id="sidebarNav">
-            <a href="administrator_assign_subject.php">Assign subject / teacher / classroom</a>
-            <a href="administrator_create_schedule.php" class="active">Create Schedule</a>
-            <a href="administrator_view_schedule.php">View Schedule</a>
-            <a href="administrator_validate_schedule.php">Validate Schedule</a>
-            <a href="administrator_update_schedule.php">Update Schedule</a>
-            <a href="administrator_delete_schedule.php">Delete Schedule</a>
-            <button class="btn-logout" onclick="window.location.href='administrator_logout.php'">Log Out</button>
+            <!-- Fix: Use absolute paths for links -->
+            <a href="/api/administrator_assign_subject.php">Assign subject / teacher / classroom</a>
+            <a href="/api/administrator_create_schedule.php" class="active">Create Schedule</a>
+            <a href="/api/administrator_view_schedule.php">View Schedule</a>
+            <a href="/api/administrator_validate_schedule.php">Validate Schedule</a>
+            <a href="/api/administrator_update_schedule.php">Update Schedule</a>
+            <a href="/api/administrator_delete_schedule.php">Delete Schedule</a>
+            <button class="btn-logout" onclick="window.location.href='/api/administrator_logout.php'">Log Out</button>
         </nav>
     </aside>
 
@@ -155,7 +156,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             <?php endif; ?>
 
+            <!-- Fix: Add user_id hidden field for session workaround -->
             <form method="POST" action="">
+                <input type="hidden" name="user_id" id="user_id_field">
+                <script>
+                    document.getElementById('user_id_field').value = localStorage.getItem('user_id') || '';
+                </script>
 
                 <label>Subject</label>
                 <select name="subject" required>
@@ -177,7 +183,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <?php endwhile; ?>
                 </select>
 
-                <!-- FIX: Section dropdown from student_profile -->
                 <label>Section</label>
                 <select name="section" required>
                     <option value="">Select a section</option>

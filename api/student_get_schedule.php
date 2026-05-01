@@ -4,12 +4,13 @@ header("Content-Type: application/json");
 
 require_once "student_db.php";
 
-if (!isset($_SESSION["user_id"])) {
+// Fix: Get user_id from SESSION or GET parameter
+$userId = $_SESSION["user_id"] ?? $_GET["user_id"] ?? null;
+
+if (!$userId) {
     echo json_encode(["status" => "error", "message" => "Not logged in"]);
     exit;
 }
-
-$userId = $_SESSION["user_id"];
 
 $stmt = $pdo->prepare("
     SELECT 
@@ -35,11 +36,9 @@ $stmt = $pdo->prepare("
 $stmt->execute([$userId]);
 $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// ✅ FORMAT DAY + TIME HERE
 foreach ($rows as &$row) {
     $start = $row['start_time'] ? date("h:i A", strtotime($row['start_time'])) : '';
     $end = $row['end_time'] ? date("h:i A", strtotime($row['end_time'])) : '';
-
     $row['schedule'] = $row['day'] . " " . $start . " - " . $end;
 }
 

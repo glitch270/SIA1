@@ -27,17 +27,14 @@ function showSection(sectionId) {
 }
 
 function loadDashboard() {
-
-    fetch("instructor_dashboard.php")
+    // Fix: absolute path for API call
+    fetch("/api/instructor_dashboard.php")
         .then(res => res.json())
         .then(data => {
-
             document.getElementById("assignedClasses").innerText =
                 data.assignedClasses ?? 0;
-
             document.getElementById("totalSubjects").innerText =
                 data.totalSubjects ?? 0;
-
             document.getElementById("classrooms").innerText =
                 data.classrooms ?? 0;
         })
@@ -45,11 +42,13 @@ function loadDashboard() {
 }
 
 function loadAssignedClasses() {
+    // Fix: absolute path for API call
+    // Get instructor user_id from localStorage
+    const userId = localStorage.getItem('user_id');
 
-    fetch("instructor_get_classes.php")
+    fetch("/api/instructor_get_classes.php?user_id=" + userId)
         .then(res => res.json())
         .then(data => {
-
             let html = "";
 
             if (!data || data.length === 0) {
@@ -61,7 +60,6 @@ function loadAssignedClasses() {
                     </tr>
                 `;
             } else {
-
                 data.forEach(row => {
                     html += `
                         <tr>
@@ -80,4 +78,3 @@ function loadAssignedClasses() {
         })
         .catch(err => console.error(err));
 }
-

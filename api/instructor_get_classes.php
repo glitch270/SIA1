@@ -4,22 +4,17 @@ header("Content-Type: application/json");
 
 include "administrator_db.php";
 
-if (!isset($_SESSION['user_id'])) {
+// Fix: Get user_id from SESSION or GET parameter
+$user_id = $_SESSION['user_id'] ?? $_GET['user_id'] ?? null;
+
+if (!$user_id) {
     echo json_encode([]);
     exit;
 }
 
-$user_id = $_SESSION['user_id'];
-
-/* GET instructor_id from user_id */
-$stmt = $conn->prepare("
-    SELECT instructor_id 
-    FROM instructor 
-    WHERE user_id = ?
-");
+$stmt = $conn->prepare("SELECT instructor_id FROM instructor WHERE user_id = ?");
 $stmt->bind_param("s", $user_id);
 $stmt->execute();
-
 $res = $stmt->get_result();
 $inst = $res->fetch_assoc();
 
@@ -30,7 +25,6 @@ if (!$inst) {
 
 $instructor_id = $inst['instructor_id'];
 
-/* GET ONLY ASSIGNED SCHEDULES */
 $sql = "
     SELECT 
         sub.course_code,
@@ -49,11 +43,9 @@ $sql = "
 $stmt2 = $conn->prepare($sql);
 $stmt2->bind_param("s", $instructor_id);
 $stmt2->execute();
-
 $result = $stmt2->get_result();
 
 $data = [];
-
 while ($row = $result->fetch_assoc()) {
     $data[] = [
         "code" => $row['course_code'],

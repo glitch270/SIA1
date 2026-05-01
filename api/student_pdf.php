@@ -2,13 +2,13 @@
 session_start();
 require_once "student_db.php";
 
-if (!isset($_SESSION["user_id"])) {
+// Fix: Get user_id from SESSION or GET parameter
+$userId = $_SESSION["user_id"] ?? $_GET["user_id"] ?? null;
+
+if (!$userId) {
     die("Not logged in");
 }
 
-$userId = $_SESSION["user_id"];
-
-/* CLEAN JOIN QUERY (NO REDUNDANT SCHEDULE FIELDS) */
 $stmt = $pdo->prepare("
     SELECT 
         sub.course_code,
@@ -45,9 +45,7 @@ $schedules = $stmt->fetchAll();
     </style>
 </head>
 <body>
-
 <h2>Class Schedule</h2>
-
 <table>
     <tr>
         <th>Course Code</th>
@@ -65,13 +63,11 @@ $schedules = $stmt->fetchAll();
         </tr>
     <?php else: ?>
         <?php foreach ($schedules as $row): ?>
-
             <?php
                 $start = $row['start_time'] ? date("h:i A", strtotime($row['start_time'])) : '';
                 $end   = $row['end_time'] ? date("h:i A", strtotime($row['end_time'])) : '';
                 $schedule = $row['day'] . " " . $start . " - " . $end;
             ?>
-
             <tr>
                 <td><?= htmlspecialchars($row['course_code']) ?></td>
                 <td><?= htmlspecialchars($row['description']) ?></td>
@@ -81,14 +77,18 @@ $schedules = $stmt->fetchAll();
                 <td><?= htmlspecialchars($row['instructor_name']) ?></td>
                 <td><?= htmlspecialchars($row['section']) ?></td>
             </tr>
-
         <?php endforeach; ?>
     <?php endif; ?>
 </table>
 
 <script>
-    window.print();
+    // Fix: Pass user_id via URL for PDF
+    const userId = localStorage.getItem('user_id');
+    if (userId && !window.location.search.includes('user_id')) {
+        window.location.href = '/api/student_pdf.php?user_id=' + userId;
+    } else {
+        window.print();
+    }
 </script>
-
 </body>
 </html>

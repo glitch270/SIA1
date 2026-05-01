@@ -5,201 +5,39 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Class Schedule</title>
 <style>
-  body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #f3f3f3;
-  }
-  .top-bar {
-    height: 30px;
-    background: #1f2a63;
-  }
-  .container {
-    display: flex;
-    min-height: 100vh;
-  }
-  .sidebar {
-    background-color: #c8c8c8;
-    width: 250px; 
-    padding: 30px 15px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .brand-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    margin-bottom: 30px;
-  }
-  .logo-img {
-    width: 55px;
-    height: 55px;        
-    border-radius: 50%;  
-    object-fit: cover;   
-  }
-  .brand-text {
-    display: flex;
-    flex-direction: column;
-    line-height: 1.2;
-  }
-  .brand-text strong {
-    font-size: 13px;
-    color: #000;
-    font-weight: 800;
-  }
-  .brand-text span {
-    font-size: 12px;
-    color: #333;
-  }
-  .sidebar-top h3 {
-    margin-bottom: 20px;
-    font-weight: bold;
-    text-align: center;
-    color: #171717cc;
-  }
-  .btn-schedule {
-    background-color: #1e235e;
-    color: #fff;
-    border: none;
-    padding: 12px 0;
-    border-radius: 5px;
-    font-weight: 700;
-    cursor: pointer;
-    width: 140px;
-    display: block;
-    margin: 0 auto 60px auto;
-  }
-  .btn-logout {
-    background-color: #1e235e;
-    color: #fff;
-    border: none;
-    padding: 12px 0;
-    border-radius: 5px;
-    font-weight: 700;
-    cursor: pointer;
-    width: 100%;
-    text-align: center;
-  }
-  .main-content {
-    flex-grow: 1;
-    background-color: white;
-    padding: 40px 40px 80px 40px;
-    box-sizing: border-box;
-  }
-  .header-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center; 
-    margin-bottom: 10px; 
-    font-size: 12px;
-    color: #171717cc;
-  }
-  .header-left strong {
-    display: block;
-    font-weight: 600;
-    font-size: 12px;
-    margin-bottom: 2px;
-  }
-  .header-right {
-    display: flex;             
-    align-items: center;        
-    gap: 30px;                  
-    font-size: 12px;
-  }
-  .btn-pdf {
-    background-color: #03ac11;
-    color: #fff;
-    font-size: 10px;
-    padding: 5px 8px;
-    border-radius: 5px;
-    border: none;
-    cursor: pointer;
-  }
-  .schedule-title {
-    font-weight: 700;
-    font-size: 14px;
-    text-align: center;
-    margin-bottom: 12px;
-    color: #1e235e;
-    border-bottom: 1px solid #ddd;
-    padding-bottom: 6px;
-  }
-  table {
-    width: 100%;
-    font-size: 12px;
-    border-collapse: collapse;
-  }
-  th, td {
-    border: 1px solid #ddd;
-    padding: 6px 8px;
-    text-align: left;
-    vertical-align: top;
-  }
-  th {
-    background-color: #f9f9f9;
-    color: rgb(12, 12, 12);
-    font-weight: 600;
-  }
+  body { margin: 0; font-family: Arial, sans-serif; background: #f3f3f3; }
+  .top-bar { height: 30px; background: #1f2a63; }
+  .container { display: flex; min-height: 100vh; }
+  .sidebar { background-color: #c8c8c8; width: 250px; padding: 30px 15px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; align-items: center; }
+  .brand-container { display: flex; align-items: center; gap: 10px; width: 100%; margin-bottom: 30px; }
+  .logo-img { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; }
+  .brand-text { display: flex; flex-direction: column; line-height: 1.2; }
+  .brand-text strong { font-size: 13px; color: #000; font-weight: 800; }
+  .brand-text span { font-size: 12px; color: #333; }
+  .sidebar-top h3 { margin-bottom: 20px; font-weight: bold; text-align: center; color: #171717cc; }
+  .btn-schedule { background-color: #1e235e; color: #fff; border: none; padding: 12px 0; border-radius: 5px; font-weight: 700; cursor: pointer; width: 140px; display: block; margin: 0 auto 60px auto; }
+  .btn-logout { background-color: #1e235e; color: #fff; border: none; padding: 12px 0; border-radius: 5px; font-weight: 700; cursor: pointer; width: 100%; text-align: center; }
+  .main-content { flex-grow: 1; background-color: white; padding: 40px 40px 80px 40px; box-sizing: border-box; }
+  .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 12px; color: #171717cc; }
+  .header-left strong { display: block; font-weight: 600; font-size: 12px; margin-bottom: 2px; }
+  .header-right { display: flex; align-items: center; gap: 30px; font-size: 12px; }
+  .btn-pdf { background-color: #03ac11; color: #fff; font-size: 10px; padding: 5px 8px; border-radius: 5px; border: none; cursor: pointer; }
+  .schedule-title { font-weight: 700; font-size: 14px; text-align: center; margin-bottom: 12px; color: #1e235e; border-bottom: 1px solid #ddd; padding-bottom: 6px; }
+  table { width: 100%; font-size: 12px; border-collapse: collapse; }
+  th, td { border: 1px solid #ddd; padding: 6px 8px; text-align: left; vertical-align: top; }
+  th { background-color: #f9f9f9; color: rgb(12, 12, 12); font-weight: 600; }
   .col-code { width: 10%; }
   .col-desc { width: 30%; }
   .col-unit { width: 7%; text-align: center; }
-  tbody tr:hover td {
-    color: #0311ac;
-    font-weight: 500;
-  }
-  .btn-pdf:hover {
-    background-color: #5a635b18;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-  }
-  .btn-logout:hover {
-    background-color: #d32f2f; 
-  }
-
+  tbody tr:hover td { color: #0311ac; font-weight: 500; }
+  .btn-pdf:hover { background-color: #5a635b18; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+  .btn-logout:hover { background-color: #d32f2f; }
   @media print {
-
-    /* HIDE SIDEBAR */
-    .sidebar {
-        display: none !important;
-    }
-
-    /* HIDE TOP BAR */
-    .top-bar {
-        display: none !important;
-    }
-
-    /* HIDE BUTTONS */
-    .btn-schedule,
-    .btn-logout,
-    .btn-pdf {
-        display: none !important;
-    }
-
-    /* REMOVE TITLE "My Schedule" */
-    .sidebar h3 {
-        display: none !important;
-    }
-
-    /* OPTIONAL: hide page title if needed */
-    .schedule-title {
-        display: none !important;
-    }
-
-    body {
-        background: white !important;
-    }
-
-    .container {
-        display: block !important;
-    }
-
-    .main-content {
-        padding: 0 !important;
-    }
-}
+    .sidebar, .top-bar, .btn-schedule, .btn-logout, .btn-pdf, .sidebar h3, .schedule-title { display: none !important; }
+    body { background: white !important; }
+    .container { display: block !important; }
+    .main-content { padding: 0 !important; }
+  }
 </style>
 </head>
 <body>
@@ -208,7 +46,8 @@
     <div class="sidebar">
       <div class="sidebar-top">
         <div class="brand-container">
-          <img src="PSU.png" alt="Partido State University Logo" class="logo-img" />
+          <!-- Fix: absolute path for logo -->
+          <img src="/PSU.png" alt="Partido State University Logo" class="logo-img" />
           <div class="brand-text">
             <strong>Partido State University</strong>
             <span>Goa, Camarines Sur</span>
@@ -217,7 +56,8 @@
         <h3>My Schedule</h3>
         <button class="btn-schedule">Class Schedule</button>
       </div>
-      <button class="btn-logout">Log Out</button>
+      <!-- Fix: absolute path for logout -->
+      <button class="btn-logout" onclick="window.location.href='/api/student_logout.php'">Log Out</button>
     </div>
     <div class="main-content">
       <div class="header-top">
@@ -231,7 +71,8 @@
             <div id="period">Period: </div>
           </div>
           <div>
-            <button class="btn-pdf">PDF</button>
+            <!-- Fix: absolute path for PDF -->
+            <button class="btn-pdf" onclick="window.location.href='/api/student_pdf.php?user_id=' + localStorage.getItem('user_id')">PDF</button>
           </div>
         </div>
       </div>
@@ -248,12 +89,13 @@
             <th class="col-section">Section</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody id="scheduleTable">
         </tbody>
       </table>
     </div>
   </div>
 
-  <script src="student_script.js"></script>
+  <!-- Fix: absolute path for script -->
+  <script src="/student_script.js"></script>
 </body>
 </html>

@@ -29,7 +29,6 @@ if (!$user) {
 
 $storedPassword = $user["password"];
 
-// support plain + hashed passwords
 if (str_starts_with($storedPassword, '$2y$')) {
     $valid = password_verify($password, $storedPassword);
 } else {
@@ -41,19 +40,20 @@ if (!$valid) {
     exit;
 }
 
-// ROLE CHECK (important for ERP system)
 if ($user["role"] !== "student") {
     echo json_encode(["status" => "error", "message" => "Access denied"]);
     exit;
 }
 
-// SESSION (UNIFIED SYSTEM)
 $_SESSION["user_id"] = $user["user_id"];
 $_SESSION["name"] = $user["full_name"];
 $_SESSION["role"] = $user["role"];
 
+// Fix: Return user_id and full_name for localStorage
 echo json_encode([
-    "status" => "success",
-    "role" => "student"
+    "status"    => "success",
+    "role"      => "student",
+    "user_id"   => $user["user_id"],
+    "full_name" => $user["full_name"]
 ]);
 ?>
