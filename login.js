@@ -1,7 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-
     const form = document.getElementById("loginForm");
-
     if (!form) return;
 
     form.addEventListener("submit", function (e) {
@@ -10,7 +8,6 @@ document.addEventListener("DOMContentLoaded", function () {
         const username = document.getElementById("username").value.trim();
         const password = document.getElementById("password").value.trim();
         const messageBox = document.getElementById("message");
-
         messageBox.innerText = "";
 
         if (!username || !password) {
@@ -18,39 +15,32 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        fetch("login.php", {
+        fetch("api/login.php", {
             method: "POST",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded"
             },
-            body: new URLSearchParams({
-                username,
-                password
-            })
+            body: new URLSearchParams({ username, password })
         })
         .then(res => res.json())
         .then(data => {
-
             console.log("Login response:", data);
 
             if (data.status === "success") {
+                // Save to localStorage
+                localStorage.setItem('user_id', data.user_id);
+                localStorage.setItem('role', data.role);
+                localStorage.setItem('full_name', data.full_name);
 
                 if (data.role === "admin") {
-                    window.location.href = "administrator_assign_subject.php";
-                }
-
-                else if (data.role === "instructor") {
-                    window.location.href = "instructor_portal.php";
-                }
-
-                else if (data.role === "student") {
+                    window.location.href = "api/administrator_assign_subject.php";
+                } else if (data.role === "instructor") {
+                    window.location.href = "instructor_portal.html";
+                } else if (data.role === "student") {
                     window.location.href = "student_portal.html";
-                }
-
-                else {
+                } else {
                     messageBox.innerText = "Unknown role: " + data.role;
                 }
-
             } else {
                 messageBox.innerText = data.message;
             }
