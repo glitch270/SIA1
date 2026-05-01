@@ -1,0 +1,283 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box; /* Ito ang sikreto para laging consistent ang sizes */
+    font-family: Arial, sans-serif;
+}
+
+body { 
+    background: #ffffff; 
+    overflow-x: hidden; 
+}
+
+.top-bar { 
+    height: 40px; 
+    background: #0a0a3c; 
+    width: 100%; 
+}
+
+.container {
+    display: flex;
+    align-items: flex-start;
+}
+
+.sidebar {
+    background-color: #e9ecef;
+    width: 260px;
+    min-width: 260px; 
+    padding: 25px 20px;
+    border-right: 1px solid #ddd;
+    display: flex;
+    flex-direction: column;
+}
+
+.brand-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 40px;
+}
+
+.logo-img { 
+    width: 50px; 
+    height: 50px; 
+    border-radius: 50%; 
+    object-fit: cover; 
+}
+
+.brand-text strong { 
+    display: block; 
+    font-size: 11px; 
+    color: #333; 
+}
+
+.brand-text span { 
+    font-size: 10px; 
+    color: #666; 
+}
+
+.portal-title {
+    text-align: center;
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 35px;
+}
+
+.nav-btn {
+    background-color: #0a0a3c;
+    color: #fff;
+    border: none;
+    padding: 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    margin-bottom: 15px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.nav-btn:hover { 
+    background-color: #1a1a5c; 
+}
+
+.nav-btn.active { 
+    background-color: #4db6ac; 
+} 
+
+.main-content {
+    flex-grow: 1;
+    min-width: 0;
+    padding: 10px 30px;  /* reduced padding */
+    background-color: #ffffff;
+}
+
+.back-arrow {
+    font-size: 24px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    display: inline-block;
+    color: #333;
+}
+.table-area-container {
+    margin-top: 10px;
+}
+
+.page-title {
+    font-size: 32px;
+    font-weight: bold;
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #000;
+}
+
+.welcome-box {
+    background-color: #f1f1f1;
+    border-radius: 20px;
+    padding: 45px;
+    width: 100%;
+    max-width: 1000px;
+}
+
+.stats-container {
+    display: flex;
+    gap: 25px;
+    margin-top: 30px;
+}
+
+.card {
+    background-color: #cccccc;
+    border: 1px solid #999;
+    border-radius: 12px;
+    padding: 20px;
+    flex: 1;
+    min-width: 160px;
+}
+
+.card-label { 
+    font-weight: bold; 
+    font-size: 14px; 
+    color: #333; 
+}
+
+.card-value { 
+    font-size: 36px; 
+    font-weight: bold; 
+    display: block; 
+    margin-top: 10px; 
+}
+
+.table-area-container {
+    background-color: #f1f1f1;
+    border-radius: 20px;
+    padding: 30px;
+    width: 100%;
+    max-width: 1100px;
+}
+
+table { 
+    width: 100%; 
+    border-collapse: collapse; 
+}
+
+thead tr { 
+    background-color: #0a0a3c; 
+    color: white; 
+}
+
+th, td { 
+    padding: 15px; 
+    text-align: left; 
+    border-bottom: 1px solid #ccc; 
+    font-size: 14px; 
+}
+
+tbody tr { 
+    background-color: white; 
+}
+
+.summary-wrapper { 
+    display: flex; 
+    gap: 25px; 
+    margin-bottom: 30px; 
+}
+
+.summary-card {
+    flex: 1;
+    border: 1px solid #ccc;
+    border-radius: 15px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    max-width: 400px;
+}
+
+.card-icon { 
+    font-size: 32px; 
+}
+
+.text-blue { 
+    color: #42a5f5; 
+    font-weight: bold; 
+}
+
+.section-subtitle { 
+    font-size: 24px; 
+    font-weight: bold; 
+    margin-bottom: 20px; 
+}
+
+.schedule-grid th { 
+    background: #0a0a3c; 
+    color: white; 
+    text-align: center; 
+}
+
+.schedule-grid td { 
+    height: 70px; 
+    text-align: center; 
+    border: 1px solid #ddd; 
+}
+
+.time-label { 
+    font-weight: bold; 
+    background: #f9f9f9 !important; 
+    width: 100px; 
+}
+
+.class-block { 
+    border-radius: 8px; 
+    padding: 10px; 
+    font-size: 12px; 
+    font-weight: bold; 
+}
+
+.green { 
+    background-color: #a7ffeb; 
+    color: #00695c; 
+}
+
+.blue { 
+    background-color: #bbdefb; 
+    color: #1565c0; 
+}
+
+.content-section {
+    display: none;
+    width: 100%;
+}
+
+.content-section.active {
+    display: block;
+}
+
+.main-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+.class-block {
+    background: #4a66a0;
+    color: white;
+    padding: 6px;
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+.btn-logout {
+            background-color: #1e235e; 
+            color: #fff;
+            border: none;
+            padding: 12px 3px;
+            border-radius: 5px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            text-align: center;
+            margin-top: 245px;
+            transition: 0.3s; 
+        }
+
+    .btn-logout:hover {
+        background-color: #d32f2f; 
+    }

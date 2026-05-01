@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="top-bar"></div>
+
+<div class="center-box">
+    <img src="PSU.png" class="logo">
+
+    <h2>Partido State University</h2>
+    <p>Goa, Camarines Sur</p>
+
+    <div class="role">ADMINISTRATOR</div>
+    <form id="loginForm" class="form-stack">
+        <div class="input-group">
+            <label>User ID:</label>
+          <input type="text" id="username" required>
+        </div>
+
+        <div class="input-group">
+            <label>Password:</label>
+            <input type="password" id="password" required>
+        </div>
+
+        <button type="submit" class="btn">Login</button>
+    </form>
+    <p id="message" style="color:red;"></p>
+    <button class="btn gray">Forgot password</button>
+</div>
+<script src="login.js"></script>
+
+</body>
+</html>
