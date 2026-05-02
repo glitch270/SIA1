@@ -19,12 +19,15 @@ function formatTime($time)
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['validate'])) {
 
+    // Fix: Added subjects join to get course_code
     $query = "
         SELECT 
             s.*,
+            sub.course_code,
             u.full_name AS instructor_name,
             r.room_name
         FROM schedule s
+        LEFT JOIN subjects sub ON s.subject_id = sub.id
         LEFT JOIN instructor i ON s.instructor_id = i.instructor_id
         LEFT JOIN users u ON i.user_id = u.user_id
         LEFT JOIN rooms r ON s.room_id = r.id
@@ -36,9 +39,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['validate'])) {
         while ($row = mysqli_fetch_assoc($result)) {
             $schedules[] = [
                 'id' => $row['id'],
-                'subject' => $row['course_code'],
+                'subject' => $row['course_code'] ?? 'N/A',
                 'teacher' => $row['instructor_name'] ?? 'N/A',
-                'classroom' => $row['room_name'] ?? $row['room'],
+                'classroom' => $row['room_name'] ?? 'N/A',
                 'day' => $row['day'],
                 'start_time' => $row['start_time'],
                 'end_time' => $row['end_time']
@@ -123,7 +126,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['validate'])) {
             <a href="/api/administrator_validate_schedule.php" class="active">Validate Schedule</a>
             <a href="/api/administrator_update_schedule.php">Update Schedule</a>
             <a href="/api/administrator_delete_schedule.php">Delete Schedule</a>
-            <!-- Fix: logout with localStorage clear -->
             <button class="btn-logout" onclick="logout()">Log Out</button>
         </nav>
     </aside>
@@ -174,7 +176,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['validate'])) {
         </div>
     </main>
 
-    <!-- Fix: logout function with localStorage clear -->
     <script>
         function logout() {
             localStorage.removeItem('user_id');
