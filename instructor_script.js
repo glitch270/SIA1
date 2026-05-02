@@ -27,8 +27,10 @@ function showSection(sectionId) {
 }
 
 function loadDashboard() {
-    // Fix: absolute path for API call
-    fetch("/api/instructor_dashboard.php")
+    // Fix: pass user_id from localStorage
+    const userId = localStorage.getItem('user_id');
+
+    fetch("/api/instructor_dashboard.php?user_id=" + userId)
         .then(res => res.json())
         .then(data => {
             document.getElementById("assignedClasses").innerText =
@@ -42,8 +44,6 @@ function loadDashboard() {
 }
 
 function loadAssignedClasses() {
-    // Fix: absolute path for API call
-    // Get instructor user_id from localStorage
     const userId = localStorage.getItem('user_id');
 
     fetch("/api/instructor_get_classes.php?user_id=" + userId)
