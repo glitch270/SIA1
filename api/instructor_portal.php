@@ -15,7 +15,6 @@
         <aside class="sidebar">
 
             <div class="brand-container">
-                <!-- Fix: absolute path for logo -->
                 <img src="/PSU.png" alt="Logo" class="logo-img">
                 <div class="brand-text">
                     <strong>Partido State University</strong>
@@ -39,8 +38,13 @@
                     View Assigned Class
                 </button>
 
-                <!-- Fix: absolute path for logout -->
-                <button class="btn-logout" onclick="window.location.href='/api/instructor_logout.php'">Log Out</button>
+                <!-- Fix: Clear localStorage on logout -->
+                <button class="btn-logout" onclick="
+                    localStorage.removeItem('user_id');
+                    localStorage.removeItem('role');
+                    localStorage.removeItem('full_name');
+                    window.location.href='/api/instructor_logout.php'
+                ">Log Out</button>
 
             </nav>
 

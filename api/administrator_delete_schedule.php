@@ -112,7 +112,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_delete'])) {
             <a href="/api/administrator_validate_schedule.php">Validate Schedule</a>
             <a href="/api/administrator_update_schedule.php">Update Schedule</a>
             <a href="/api/administrator_delete_schedule.php" class="active">Delete Schedule</a>
-            <button class="btn-logout" onclick="window.location.href='/api/administrator_logout.php'">Log Out</button>
+            <!-- Fix: logout with localStorage clear -->
+            <button class="btn-logout" onclick="logout()">Log Out</button>
         </nav>
     </aside>
 
@@ -184,5 +185,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_delete'])) {
             </form>
         <?php endif; ?>
     </main>
+
+    <!-- Fix: logout function with localStorage clear -->
+    <script>
+        function logout() {
+            localStorage.removeItem('user_id');
+            localStorage.removeItem('role');
+            localStorage.removeItem('full_name');
+            window.location.href = '/api/administrator_logout.php';
+        }
+    </script>
 </body>
 </html>

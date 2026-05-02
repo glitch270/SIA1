@@ -137,7 +137,6 @@ while ($r = mysqli_fetch_assoc($daysResult)) {
     <div class="container">
         <aside class="sidebar">
             <div class="header">
-                <!-- Fix: absolute path for logo -->
                 <img src="/PSU.png" alt="PSU Logo" class="logo">
                 <div class="school-text">
                     <h1>Partido State University</h1>
@@ -148,7 +147,6 @@ while ($r = mysqli_fetch_assoc($daysResult)) {
             <h2>Schedule Management</h2>
 
             <nav>
-                <!-- Fix: absolute paths for all links -->
                 <a href="/api/administrator_assign_subject.php">Assign subject / teacher / classroom</a>
                 <a href="/api/administrator_create_schedule.php">Create Schedule</a>
                 <a href="/api/administrator_view_schedule.php" class="active">View Schedule</a>
@@ -157,7 +155,8 @@ while ($r = mysqli_fetch_assoc($daysResult)) {
                 <a href="/api/administrator_delete_schedule.php">Delete Schedule</a>
             </nav>
 
-            <button class="btn-logout" onclick="window.location.href='/api/administrator_logout.php'">Log Out</button>
+            <!-- Fix: logout with localStorage clear -->
+            <button class="btn-logout" onclick="logout()">Log Out</button>
         </aside>
 
         <main class="main">
@@ -211,7 +210,6 @@ while ($r = mysqli_fetch_assoc($daysResult)) {
                     </div>
 
                     <button type="submit" class="filter-btn">Apply Filters</button>
-                    <!-- Fix: absolute path for clear filters -->
                     <button type="button" class="filter-btn"
                         onclick="window.location.href='/api/administrator_view_schedule.php'">
                         Clear Filters
@@ -244,7 +242,6 @@ while ($r = mysqli_fetch_assoc($daysResult)) {
                                 <td><?php echo htmlspecialchars($s['day'] ?? 'N/A'); ?></td>
                                 <td><?php echo htmlspecialchars($s['start_time'] . ' - ' . $s['end_time']); ?></td>
                                 <td>
-                                    <!-- Fix: absolute paths for edit/delete links -->
                                     <a href="/api/administrator_update_schedule.php?id=<?php echo $s['id']; ?>" class="edit">Edit</a> |
                                     <a href="/api/administrator_delete_schedule.php?id=<?php echo $s['id']; ?>" class="delete">Delete</a>
                                 </td>
@@ -257,5 +254,15 @@ while ($r = mysqli_fetch_assoc($daysResult)) {
             <p class="footer-text">Showing <?php echo count($filteredSchedules); ?> schedules</p>
         </main>
     </div>
+
+    <!-- Fix: logout function with localStorage clear -->
+    <script>
+        function logout() {
+            localStorage.removeItem('user_id');
+            localStorage.removeItem('role');
+            localStorage.removeItem('full_name');
+            window.location.href = '/api/administrator_logout.php';
+        }
+    </script>
 </body>
 </html>

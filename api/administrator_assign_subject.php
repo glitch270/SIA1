@@ -64,7 +64,6 @@ if ($recentResult) {
     <div class="top-bar"></div>
     <aside class="sidebar">
         <div class="header">
-            <!-- Fix: absolute path for logo -->
             <img src="/PSU.png" alt="University Logo" class="logo">
             <div class="school-text">
                 <h1>Partido State University</h1>
@@ -75,7 +74,6 @@ if ($recentResult) {
         <h2>Schedule Management</h2>
 
         <nav id="sidebarNav">
-            <!-- Fix: absolute paths for all links -->
             <a href="/api/administrator_assign_subject.php" class="active">Assign subject / teacher / classroom</a>
             <a href="/api/administrator_create_schedule.php">Create Schedule</a>
             <a href="/api/administrator_view_schedule.php">View Schedule</a>
@@ -84,7 +82,8 @@ if ($recentResult) {
             <a href="/api/administrator_delete_schedule.php">Delete Schedule</a>
         </nav>
 
-        <button class="btn-logout" onclick="window.location.href='/api/administrator_logout.php'">Log Out</button>
+        <!-- Fix: logout with localStorage clear function -->
+        <button class="btn-logout" onclick="logout()">Log Out</button>
     </aside>
 
     <main class="main">
@@ -114,5 +113,15 @@ if ($recentResult) {
             </div>
         </div>
     </main>
+
+    <!-- Fix: logout function with localStorage clear -->
+    <script>
+        function logout() {
+            localStorage.removeItem('user_id');
+            localStorage.removeItem('role');
+            localStorage.removeItem('full_name');
+            window.location.href = '/api/administrator_logout.php';
+        }
+    </script>
 </body>
 </html>
