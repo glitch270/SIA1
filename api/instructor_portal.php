@@ -38,7 +38,6 @@
                     View Assigned Class
                 </button>
 
-                <!-- Fix: Clear localStorage on logout -->
                 <button class="btn-logout" onclick="
                     localStorage.removeItem('user_id');
                     localStorage.removeItem('role');
@@ -104,11 +103,11 @@
 
                         <thead>
                             <tr>
-                                <th>Subject code</th>
-                                <th>Subject name</th>
-                                <th>Section</th>
-                                <th>Day</th>
-                                <th>Time</th>
+                                <th>Subject Code</th>
+                                <th>Subject Name</th>
+                                <th>Course / Program</th>
+                                <th>Semester</th>
+                                <th>Days & Time</th>
                                 <th>Room</th>
                             </tr>
                         </thead>

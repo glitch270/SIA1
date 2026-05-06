@@ -27,7 +27,6 @@ function showSection(sectionId) {
 }
 
 function loadDashboard() {
-    // Fix: pass user_id from localStorage
     const userId = localStorage.getItem('user_id');
 
     fetch("/api/instructor_dashboard.php?user_id=" + userId)
@@ -41,6 +40,15 @@ function loadDashboard() {
                 data.classrooms ?? 0;
         })
         .catch(err => console.error(err));
+}
+
+function formatTime(time) {
+    if (!time) return '';
+    const [hour, minute] = time.split(':');
+    const h = parseInt(hour);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    const h12 = h % 12 || 12;
+    return `${h12}:${minute} ${ampm}`;
 }
 
 function loadAssignedClasses() {
@@ -61,13 +69,23 @@ function loadAssignedClasses() {
                 `;
             } else {
                 data.forEach(row => {
+                    // Build days & time list
+                    let daysHtml = '';
+                    if (row.days && row.days.length > 0) {
+                        daysHtml = row.days.map(d =>
+                            `${d.day}: ${formatTime(d.start_time)} - ${formatTime(d.end_time)}`
+                        ).join('<br>');
+                    } else {
+                        daysHtml = 'N/A';
+                    }
+
                     html += `
                         <tr>
                             <td>${row.code || ''}</td>
                             <td>${row.name || ''}</td>
-                            <td>${row.section || ''}</td>
-                            <td>${row.day || ''}</td>
-                            <td>${row.start_time || ''} - ${row.end_time || ''}</td>
+                            <td>${row.course_program || ''}</td>
+                            <td>${row.semester || ''}</td>
+                            <td>${daysHtml}</td>
                             <td>${row.room_name || ''}</td>
                         </tr>
                     `;
