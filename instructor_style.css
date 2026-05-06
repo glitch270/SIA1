@@ -1,30 +1,32 @@
 * {
     margin: 0;
     padding: 0;
-    box-sizing: border-box; /* Ito ang sikreto para laging consistent ang sizes */
+    box-sizing: border-box;
     font-family: Arial, sans-serif;
 }
 
-body { 
-    background: #ffffff; 
-    overflow-x: hidden; 
+body {
+    background: #ffffff;
+    overflow-x: hidden;
 }
 
-.top-bar { 
-    height: 40px; 
-    background: #0a0a3c; 
-    width: 100%; 
+.top-bar {
+    height: 40px;
+    background: #0a0a3c;
+    width: 100%;
 }
 
 .container {
     display: flex;
-    align-items: flex-start;
+    align-items: stretch;
+    min-height: calc(100vh - 40px);
 }
 
 .sidebar {
     background-color: #e9ecef;
     width: 260px;
-    min-width: 260px; 
+    min-width: 260px;
+    min-height: calc(100vh - 40px);
     padding: 25px 20px;
     border-right: 1px solid #ddd;
     display: flex;
@@ -35,32 +37,61 @@ body {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-bottom: 40px;
+    margin-bottom: 20px;
 }
 
-.logo-img { 
-    width: 50px; 
-    height: 50px; 
-    border-radius: 50%; 
-    object-fit: cover; 
+.logo-img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
 }
 
-.brand-text strong { 
-    display: block; 
-    font-size: 11px; 
-    color: #333; 
+.brand-text strong {
+    display: block;
+    font-size: 11px;
+    color: #333;
 }
 
-.brand-text span { 
-    font-size: 10px; 
-    color: #666; 
+.brand-text span {
+    font-size: 10px;
+    color: #666;
 }
 
 .portal-title {
     text-align: center;
     font-size: 22px;
     font-weight: bold;
-    margin-bottom: 35px;
+    margin-bottom: 15px;
+}
+
+/* INSTRUCTOR NAME BOX */
+.instructor-name-box {
+    background: #0a0a3c;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+.instructor-label {
+    display: block;
+    font-size: 10px;
+    color: #aaa;
+    margin-bottom: 3px;
+}
+
+.instructor-name {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.nav-menu {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
 }
 
 .nav-btn {
@@ -73,22 +104,43 @@ body {
     width: 100%;
     margin-bottom: 15px;
     font-weight: 600;
+    font-size: 14px;
     transition: all 0.3s ease;
 }
 
-.nav-btn:hover { 
-    background-color: #1a1a5c; 
+.nav-btn:hover {
+    background-color: #1a1a5c;
 }
 
-.nav-btn.active { 
-    background-color: #4db6ac; 
-} 
+.nav-btn.active {
+    background-color: #4db6ac;
+}
+
+.btn-logout {
+    background-color: #1e235e;
+    color: #fff;
+    border: none;
+    padding: 12px;
+    border-radius: 5px;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+    text-align: center;
+    margin-top: auto;
+    transition: 0.3s;
+}
+
+.btn-logout:hover {
+    background-color: #d32f2f;
+}
 
 .main-content {
     flex-grow: 1;
     min-width: 0;
-    padding: 10px 30px;  /* reduced padding */
+    padding: 10px 30px;
     background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
 }
 
 .back-arrow {
@@ -97,9 +149,6 @@ body {
     margin-bottom: 10px;
     display: inline-block;
     color: #333;
-}
-.table-area-container {
-    margin-top: 10px;
 }
 
 .page-title {
@@ -133,17 +182,17 @@ body {
     min-width: 160px;
 }
 
-.card-label { 
-    font-weight: bold; 
-    font-size: 14px; 
-    color: #333; 
+.card-label {
+    font-weight: bold;
+    font-size: 14px;
+    color: #333;
 }
 
-.card-value { 
-    font-size: 36px; 
-    font-weight: bold; 
-    display: block; 
-    margin-top: 10px; 
+.card-value {
+    font-size: 36px;
+    font-weight: bold;
+    display: block;
+    margin-top: 10px;
 }
 
 .table-area-container {
@@ -154,92 +203,25 @@ body {
     max-width: 1100px;
 }
 
-table { 
-    width: 100%; 
-    border-collapse: collapse; 
+table {
+    width: 100%;
+    border-collapse: collapse;
 }
 
-thead tr { 
-    background-color: #0a0a3c; 
-    color: white; 
+thead tr {
+    background-color: #0a0a3c;
+    color: white;
 }
 
-th, td { 
-    padding: 15px; 
-    text-align: left; 
-    border-bottom: 1px solid #ccc; 
-    font-size: 14px; 
+th, td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #ccc;
+    font-size: 14px;
 }
 
-tbody tr { 
-    background-color: white; 
-}
-
-.summary-wrapper { 
-    display: flex; 
-    gap: 25px; 
-    margin-bottom: 30px; 
-}
-
-.summary-card {
-    flex: 1;
-    border: 1px solid #ccc;
-    border-radius: 15px;
-    padding: 20px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    max-width: 400px;
-}
-
-.card-icon { 
-    font-size: 32px; 
-}
-
-.text-blue { 
-    color: #42a5f5; 
-    font-weight: bold; 
-}
-
-.section-subtitle { 
-    font-size: 24px; 
-    font-weight: bold; 
-    margin-bottom: 20px; 
-}
-
-.schedule-grid th { 
-    background: #0a0a3c; 
-    color: white; 
-    text-align: center; 
-}
-
-.schedule-grid td { 
-    height: 70px; 
-    text-align: center; 
-    border: 1px solid #ddd; 
-}
-
-.time-label { 
-    font-weight: bold; 
-    background: #f9f9f9 !important; 
-    width: 100px; 
-}
-
-.class-block { 
-    border-radius: 8px; 
-    padding: 10px; 
-    font-size: 12px; 
-    font-weight: bold; 
-}
-
-.green { 
-    background-color: #a7ffeb; 
-    color: #00695c; 
-}
-
-.blue { 
-    background-color: #bbdefb; 
-    color: #1565c0; 
+tbody tr {
+    background-color: white;
 }
 
 .content-section {
@@ -251,11 +233,6 @@ tbody tr {
     display: block;
 }
 
-.main-content {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-}
 .class-block {
     background: #4a66a0;
     color: white;
@@ -263,21 +240,3 @@ tbody tr {
     border-radius: 6px;
     font-size: 12px;
 }
-
-.btn-logout {
-            background-color: #1e235e; 
-            color: #fff;
-            border: none;
-            padding: 12px 3px;
-            border-radius: 5px;
-            font-weight: 700;
-            cursor: pointer;
-            width: 100%;
-            text-align: center;
-            margin-top: 245px;
-            transition: 0.3s; 
-        }
-
-    .btn-logout:hover {
-        background-color: #d32f2f; 
-    }

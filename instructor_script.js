@@ -1,9 +1,13 @@
 document.addEventListener("DOMContentLoaded", function () {
+    // Display instructor name
+    const fullName = localStorage.getItem('full_name') || 'Instructor';
+    document.getElementById('instructorName').textContent = fullName;
+    document.getElementById('welcomeName').textContent = 'Welcome, ' + fullName + '!';
+
     showSection('dashboard');
 });
 
 function showSection(sectionId) {
-
     document.querySelectorAll('.content-section')
         .forEach(sec => sec.classList.remove('active'));
 
@@ -69,7 +73,6 @@ function loadAssignedClasses() {
                 `;
             } else {
                 data.forEach(row => {
-                    // Build days & time list
                     let daysHtml = '';
                     if (row.days && row.days.length > 0) {
                         daysHtml = row.days.map(d =>

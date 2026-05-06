@@ -24,6 +24,12 @@
 
             <div class="portal-title">Instructor Portal</div>
 
+            <!-- INSTRUCTOR NAME -->
+            <div class="instructor-name-box">
+                <span class="instructor-label">Logged in as:</span>
+                <span class="instructor-name" id="instructorName">—</span>
+            </div>
+
             <nav class="nav-menu">
 
                 <button id="btn-dashboard"
@@ -64,7 +70,7 @@
                 <div class="page-title">Dashboard</div>
 
                 <div class="welcome-box">
-                    <h2>Welcome to Instructor Portal</h2>
+                    <h2 id="welcomeName">Welcome!</h2>
 
                     <p>
                         Use the sidebar menu to navigate through your class schedules,
