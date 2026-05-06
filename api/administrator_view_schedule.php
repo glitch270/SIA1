@@ -2,10 +2,9 @@
 session_start();
 include 'administrator_db.php';
 
-$searchTerm    = trim($_GET['search'] ?? '');
-$filterSubject = $_GET['filter_subject'] ?? 'all';
-$filterRoom    = $_GET['filter_room'] ?? 'all';
-$filterTeacher = $_GET['filter_teacher'] ?? 'all';
+$searchTerm     = trim($_GET['search'] ?? '');
+$filterSubject  = $_GET['filter_subject'] ?? 'all';
+$filterTeacher  = $_GET['filter_teacher'] ?? 'all';
 $filterSemester = $_GET['filter_semester'] ?? 'all';
 
 $sql = "
@@ -24,35 +23,30 @@ WHERE 1=1
 ";
 
 if ($searchTerm !== '') {
-    $searchTerm = mysqli_real_escape_string($conn, $searchTerm);
+    $escaped = mysqli_real_escape_string($conn, $searchTerm);
     $sql .= " AND (
-        sub.course_code LIKE '%$searchTerm%'
-        OR sub.description LIKE '%$searchTerm%'
-        OR r.room_name LIKE '%$searchTerm%'
-        OR u.full_name LIKE '%$searchTerm%'
-        OR s.course_program LIKE '%$searchTerm%'
-        OR s.semester LIKE '%$searchTerm%'
+        sub.course_code LIKE '%$escaped%'
+        OR sub.description LIKE '%$escaped%'
+        OR r.room_name LIKE '%$escaped%'
+        OR u.full_name LIKE '%$escaped%'
+        OR s.course_program LIKE '%$escaped%'
+        OR s.semester LIKE '%$escaped%'
     )";
 }
 
 if ($filterSubject !== 'all') {
-    $filterSubject = mysqli_real_escape_string($conn, $filterSubject);
-    $sql .= " AND sub.course_code = '$filterSubject'";
-}
-
-if ($filterRoom !== 'all') {
-    $filterRoom = mysqli_real_escape_string($conn, $filterRoom);
-    $sql .= " AND r.room_name = '$filterRoom'";
+    $escaped = mysqli_real_escape_string($conn, $filterSubject);
+    $sql .= " AND sub.course_code = '$escaped'";
 }
 
 if ($filterTeacher !== 'all') {
-    $filterTeacher = mysqli_real_escape_string($conn, $filterTeacher);
-    $sql .= " AND u.full_name = '$filterTeacher'";
+    $escaped = mysqli_real_escape_string($conn, $filterTeacher);
+    $sql .= " AND u.full_name = '$escaped'";
 }
 
 if ($filterSemester !== 'all') {
-    $filterSemester = mysqli_real_escape_string($conn, $filterSemester);
-    $sql .= " AND s.semester = '$filterSemester'";
+    $escaped = mysqli_real_escape_string($conn, $filterSemester);
+    $sql .= " AND s.semester = '$escaped'";
 }
 
 $result = mysqli_query($conn, $sql);
@@ -61,7 +55,6 @@ while ($row = mysqli_fetch_assoc($result)) {
     $filteredSchedules[] = $row;
 }
 
-// Load schedule_days for each schedule
 foreach ($filteredSchedules as &$sched) {
     $sid = $sched['id'];
     $daysRes = mysqli_query($conn, "SELECT * FROM schedule_days WHERE schedule_id = $sid ORDER BY id");
@@ -73,16 +66,16 @@ foreach ($filteredSchedules as &$sched) {
 unset($sched);
 
 $allSubjects = [];
-$res = mysqli_query($conn, "SELECT course_code FROM subjects ORDER BY course_code");
-while ($r = mysqli_fetch_assoc($res)) $allSubjects[] = $r['course_code'];
-
-$allRooms = [];
-$res = mysqli_query($conn, "SELECT room_name FROM rooms ORDER BY room_name");
-while ($r = mysqli_fetch_assoc($res)) $allRooms[] = $r['room_name'];
+$res = mysqli_query($conn, "SELECT id, course_code, description FROM subjects ORDER BY course_code");
+while ($r = mysqli_fetch_assoc($res)) $allSubjects[] = $r;
 
 $allTeachers = [];
 $res = mysqli_query($conn, "SELECT u.full_name FROM instructor i JOIN users u ON i.user_id = u.user_id ORDER BY u.full_name");
 while ($r = mysqli_fetch_assoc($res)) $allTeachers[] = $r['full_name'];
+
+$allRooms = [];
+$res = mysqli_query($conn, "SELECT room_name FROM rooms ORDER BY room_name");
+while ($r = mysqli_fetch_assoc($res)) $allRooms[] = $r['room_name'];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -107,11 +100,20 @@ while ($r = mysqli_fetch_assoc($res)) $allTeachers[] = $r['full_name'];
         .main { flex: 1; padding: 30px; overflow-y: auto; }
         .main h2 { font-size: 20px; margin-bottom: 20px; color: #000; font-weight: 700; }
         .filters { background: #eee; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
-        .filters input { width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 4px; border: 1px solid #ccc; }
-        .filter-row { display: flex; gap: 15px; flex-wrap: wrap; }
-        .filter-row div { flex: 1; min-width: 150px; }
+        .filters > input[type="text"] { width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 4px; border: 1px solid #ccc; font-size: 14px; }
+        .filter-row { display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end; }
+        .filter-row > div { flex: 1; min-width: 150px; }
         .filter-row label { display: block; margin-bottom: 5px; font-size: 13px; font-weight: 600; }
-        .filter-row select { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc; }
+        .filter-row select { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc; font-size: 14px; }
+        .autocomplete-filter { position: relative; }
+        .autocomplete-filter input { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc; font-size: 14px; background: white; box-sizing: border-box; }
+        .autocomplete-filter .clear-btn { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #999; font-size: 16px; line-height: 1; }
+        .autocomplete-filter .clear-btn:hover { color: #333; }
+        .ac-list { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ccc; border-top: none; border-radius: 0 0 4px 4px; max-height: 200px; overflow-y: auto; z-index: 200; display: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .ac-list div { padding: 8px 10px; cursor: pointer; font-size: 13px; border-bottom: 1px solid #f0f0f0; }
+        .ac-list div:last-child { border-bottom: none; }
+        .ac-list div:hover { background: #e9ecef; }
+        .ac-list .ac-all { font-style: italic; color: #555; }
         table { width: 100%; border-collapse: collapse; font-size: 14px; }
         thead { background: #ddd; }
         th, td { padding: 10px 12px; text-align: left; }
@@ -158,37 +160,48 @@ while ($r = mysqli_fetch_assoc($res)) $allTeachers[] = $r['full_name'];
         <main class="main">
             <h2>View Schedule</h2>
 
-            <form method="GET" action="">
+            <form method="GET" action="" id="filterForm">
+
+                <!-- Hidden inputs to carry autocomplete values -->
+                <input type="hidden" name="filter_subject" id="filterSubjectHidden"
+                    value="<?php echo htmlspecialchars($filterSubject); ?>">
+                <input type="hidden" name="filter_teacher" id="filterTeacherHidden"
+                    value="<?php echo htmlspecialchars($filterTeacher); ?>">
+
                 <div class="filters">
-                    <label>Search</label>
+                    <label style="font-size:13px; font-weight:600; display:block; margin-bottom:5px;">Search</label>
                     <input type="text" name="search" placeholder="Search by subject, teacher, course, semester..."
                         value="<?php echo htmlspecialchars($searchTerm); ?>">
 
                     <div class="filter-row">
+
+                        <!-- SUBJECT AUTOCOMPLETE -->
                         <div>
                             <label>Filter by Subject</label>
-                            <select name="filter_subject">
-                                <option value="all">All Subjects</option>
-                                <?php foreach ($allSubjects as $subj): ?>
-                                    <option value="<?php echo htmlspecialchars($subj); ?>"
-                                        <?php echo ($filterSubject === $subj) ? 'selected' : ''; ?>>
-                                        <?php echo htmlspecialchars($subj); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
+                            <div class="autocomplete-filter">
+                                <input type="text" id="subjectFilterInput"
+                                    placeholder="All Subjects"
+                                    autocomplete="off"
+                                    value="<?php echo $filterSubject !== 'all' ? htmlspecialchars($filterSubject) : ''; ?>">
+                                <button type="button" class="clear-btn" onclick="clearSubjectFilter()">×</button>
+                                <div class="ac-list" id="subjectAcList"></div>
+                            </div>
                         </div>
+
+                        <!-- TEACHER AUTOCOMPLETE -->
                         <div>
                             <label>Filter by Teacher</label>
-                            <select name="filter_teacher">
-                                <option value="all">All Teachers</option>
-                                <?php foreach ($allTeachers as $teach): ?>
-                                    <option value="<?php echo htmlspecialchars($teach); ?>"
-                                        <?php echo ($filterTeacher === $teach) ? 'selected' : ''; ?>>
-                                        <?php echo htmlspecialchars($teach); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
+                            <div class="autocomplete-filter">
+                                <input type="text" id="teacherFilterInput"
+                                    placeholder="All Teachers"
+                                    autocomplete="off"
+                                    value="<?php echo $filterTeacher !== 'all' ? htmlspecialchars($filterTeacher) : ''; ?>">
+                                <button type="button" class="clear-btn" onclick="clearTeacherFilter()">×</button>
+                                <div class="ac-list" id="teacherAcList"></div>
+                            </div>
                         </div>
+
+                        <!-- SEMESTER -->
                         <div>
                             <label>Filter by Semester</label>
                             <select name="filter_semester">
@@ -197,6 +210,7 @@ while ($r = mysqli_fetch_assoc($res)) $allTeachers[] = $r['full_name'];
                                 <option value="2nd Semester" <?php echo $filterSemester === '2nd Semester' ? 'selected' : ''; ?>>2nd Semester</option>
                             </select>
                         </div>
+
                     </div>
 
                     <button type="submit" class="filter-btn">Apply Filters</button>
@@ -238,13 +252,11 @@ while ($r = mysqli_fetch_assoc($res)) $allTeachers[] = $r['full_name'];
                                     <?php if (!empty($s['days'])): ?>
                                         <ul class="days-list">
                                             <?php foreach ($s['days'] as $day): ?>
-                                                <li>
-                                                    <?php
-                                                        $st = $day['start_time'] ? date("h:i A", strtotime($day['start_time'])) : '';
-                                                        $et = $day['end_time']   ? date("h:i A", strtotime($day['end_time']))   : '';
-                                                        echo htmlspecialchars($day['day'] . ": " . $st . " - " . $et);
-                                                    ?>
-                                                </li>
+                                                <li><?php
+                                                    $st = $day['start_time'] ? date("h:i A", strtotime($day['start_time'])) : '';
+                                                    $et = $day['end_time']   ? date("h:i A", strtotime($day['end_time']))   : '';
+                                                    echo htmlspecialchars($day['day'] . ": " . $st . " - " . $et);
+                                                ?></li>
                                             <?php endforeach; ?>
                                         </ul>
                                     <?php else: ?>
@@ -266,6 +278,123 @@ while ($r = mysqli_fetch_assoc($res)) $allTeachers[] = $r['full_name'];
     </div>
 
     <script>
+        const allSubjects = <?php echo json_encode($allSubjects); ?>;
+        const allTeachers = <?php echo json_encode($allTeachers); ?>;
+
+        // ---- SUBJECT FILTER AUTOCOMPLETE ----
+        const subjectFilterInput  = document.getElementById('subjectFilterInput');
+        const subjectAcList       = document.getElementById('subjectAcList');
+        const filterSubjectHidden = document.getElementById('filterSubjectHidden');
+
+        function showSubjectOptions(val) {
+            subjectAcList.innerHTML = '';
+
+            // Always show "All Subjects" option
+            const allDiv = document.createElement('div');
+            allDiv.textContent = 'All Subjects';
+            allDiv.className = 'ac-all';
+            allDiv.onclick = () => {
+                subjectFilterInput.value = '';
+                filterSubjectHidden.value = 'all';
+                subjectAcList.style.display = 'none';
+            };
+            subjectAcList.appendChild(allDiv);
+
+            const matches = val
+                ? allSubjects.filter(s =>
+                    s.course_code.toLowerCase().includes(val) ||
+                    s.description.toLowerCase().includes(val))
+                : allSubjects;
+
+            matches.forEach(s => {
+                const div = document.createElement('div');
+                div.textContent = s.course_code + ' - ' + s.description;
+                div.onclick = () => {
+                    subjectFilterInput.value  = s.course_code;
+                    filterSubjectHidden.value = s.course_code;
+                    subjectAcList.style.display = 'none';
+                };
+                subjectAcList.appendChild(div);
+            });
+
+            subjectAcList.style.display = 'block';
+        }
+
+        subjectFilterInput.addEventListener('input', function () {
+            filterSubjectHidden.value = 'all';
+            showSubjectOptions(this.value.trim().toLowerCase());
+        });
+        subjectFilterInput.addEventListener('focus', function () {
+            showSubjectOptions(this.value.trim().toLowerCase());
+        });
+
+        function clearSubjectFilter() {
+            subjectFilterInput.value = '';
+            filterSubjectHidden.value = 'all';
+            subjectAcList.style.display = 'none';
+        }
+
+        // ---- TEACHER FILTER AUTOCOMPLETE ----
+        const teacherFilterInput  = document.getElementById('teacherFilterInput');
+        const teacherAcList       = document.getElementById('teacherAcList');
+        const filterTeacherHidden = document.getElementById('filterTeacherHidden');
+
+        function showTeacherOptions(val) {
+            teacherAcList.innerHTML = '';
+
+            // Always show "All Teachers" option
+            const allDiv = document.createElement('div');
+            allDiv.textContent = 'All Teachers';
+            allDiv.className = 'ac-all';
+            allDiv.onclick = () => {
+                teacherFilterInput.value = '';
+                filterTeacherHidden.value = 'all';
+                teacherAcList.style.display = 'none';
+            };
+            teacherAcList.appendChild(allDiv);
+
+            const matches = val
+                ? allTeachers.filter(t => t.toLowerCase().includes(val))
+                : allTeachers;
+
+            matches.forEach(t => {
+                const div = document.createElement('div');
+                div.textContent = t;
+                div.onclick = () => {
+                    teacherFilterInput.value  = t;
+                    filterTeacherHidden.value = t;
+                    teacherAcList.style.display = 'none';
+                };
+                teacherAcList.appendChild(div);
+            });
+
+            teacherAcList.style.display = 'block';
+        }
+
+        teacherFilterInput.addEventListener('input', function () {
+            filterTeacherHidden.value = 'all';
+            showTeacherOptions(this.value.trim().toLowerCase());
+        });
+        teacherFilterInput.addEventListener('focus', function () {
+            showTeacherOptions(this.value.trim().toLowerCase());
+        });
+
+        function clearTeacherFilter() {
+            teacherFilterInput.value = '';
+            filterTeacherHidden.value = 'all';
+            teacherAcList.style.display = 'none';
+        }
+
+        // Close dropdowns on outside click
+        document.addEventListener('click', function (e) {
+            if (!subjectFilterInput.contains(e.target) && !subjectAcList.contains(e.target)) {
+                subjectAcList.style.display = 'none';
+            }
+            if (!teacherFilterInput.contains(e.target) && !teacherAcList.contains(e.target)) {
+                teacherAcList.style.display = 'none';
+            }
+        });
+
         function logout() {
             localStorage.removeItem('user_id');
             localStorage.removeItem('role');
