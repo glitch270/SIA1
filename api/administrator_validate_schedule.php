@@ -19,13 +19,13 @@ function formatTime($time)
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['validate'])) {
 
-    // Fix: Added subjects join to get course_code
     $query = "
         SELECT 
-            s.*,
+            s.id,
             sub.course_code,
             u.full_name AS instructor_name,
-            r.room_name
+            r.room_name,
+            s.instructor_id
         FROM schedule s
         LEFT JOIN subjects sub ON s.subject_id = sub.id
         LEFT JOIN instructor i ON s.instructor_id = i.instructor_id
@@ -37,32 +37,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['validate'])) {
 
     if ($result) {
         while ($row = mysqli_fetch_assoc($result)) {
-            $schedules[] = [
-                'id' => $row['id'],
-                'subject' => $row['course_code'] ?? 'N/A',
-                'teacher' => $row['instructor_name'] ?? 'N/A',
-                'classroom' => $row['room_name'] ?? 'N/A',
-                'day' => $row['day'],
-                'start_time' => $row['start_time'],
-                'end_time' => $row['end_time']
-            ];
+            $scheduleId = $row['id'];
+
+            // Get all days for this schedule
+            $daysRes = mysqli_query($conn, "SELECT * FROM schedule_days WHERE schedule_id = $scheduleId");
+            while ($day = mysqli_fetch_assoc($daysRes)) {
+                $schedules[] = [
+                    'id'          => $scheduleId,
+                    'subject'     => $row['course_code'] ?? 'N/A',
+                    'teacher'     => $row['instructor_name'] ?? 'N/A',
+                    'teacher_id'  => $row['instructor_id'],
+                    'classroom'   => $row['room_name'] ?? 'N/A',
+                    'day'         => $day['day'],
+                    'start_time'  => $day['start_time'],
+                    'end_time'    => $day['end_time'],
+                ];
+            }
         }
     }
 
+    // Check conflicts
     for ($i = 0; $i < count($schedules); $i++) {
         for ($j = $i + 1; $j < count($schedules); $j++) {
             $s1 = $schedules[$i];
             $s2 = $schedules[$j];
 
-            if ($s1['classroom'] === $s2['classroom'] && $s1['day'] === $s2['day']) {
-                if (timeOverlaps($s1['start_time'], $s1['end_time'], $s2['start_time'], $s2['end_time'])) {
-                    $conflicts[] = [
-                        'type' => 'Classroom Conflict',
-                        'description' => "{$s1['classroom']} is used by {$s1['subject']} and {$s2['subject']} on {$s1['day']} with overlapping time.",
-                        'schedule1' => $s1,
-                        'schedule2' => $s2
-                    ];
-                }
+            if ($s1['day'] !== $s2['day']) continue;
+            if (!timeOverlaps($s1['start_time'], $s1['end_time'], $s2['start_time'], $s2['end_time'])) continue;
+
+            // Classroom conflict
+            if ($s1['classroom'] === $s2['classroom']) {
+                $conflicts[] = [
+                    'type'        => 'Classroom Conflict',
+                    'description' => "{$s1['classroom']} is used by {$s1['subject']} and {$s2['subject']} on {$s1['day']} with overlapping time.",
+                    'schedule1'   => $s1,
+                    'schedule2'   => $s2
+                ];
+            }
+
+            // Teacher conflict
+            if ($s1['teacher_id'] === $s2['teacher_id'] && $s1['id'] !== $s2['id']) {
+                $conflicts[] = [
+                    'type'        => 'Teacher Conflict',
+                    'description' => "{$s1['teacher']} is scheduled in two classes on {$s1['day']} with overlapping time.",
+                    'schedule1'   => $s1,
+                    'schedule2'   => $s2
+                ];
             }
         }
     }
@@ -136,7 +156,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['validate'])) {
         <div class="validation-box">
             <p>Click the button below to validate all schedules for conflicts. The system will check for teacher and classroom conflicts.</p>
             <form method="POST" action="">
-                <button type="submit" name="validate" class="btn-validate">Validate All Schedule</button>
+                <button type="submit" name="validate" class="btn-validate">Validate All Schedules</button>
             </form>
         </div>
 
@@ -150,12 +170,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['validate'])) {
             <?php elseif (empty($conflicts)): ?>
                 <div class="success-result">
                     <strong>✓ Validation Complete</strong>
-                    <p>No conflicts found! All <?php echo count($schedules); ?> schedules are valid.</p>
+                    <p>No conflicts found! All schedules are valid.</p>
                 </div>
 
             <?php else: ?>
                 <p class="schedule-count">
-                    Validated <?php echo count($schedules); ?> schedules.
                     Found <?php echo count($conflicts); ?> conflict(s):
                 </p>
 
