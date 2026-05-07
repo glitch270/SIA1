@@ -438,10 +438,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update'])) {
         }
 
         function logout() {
-            localStorage.removeItem('user_id');
-            localStorage.removeItem('role');
-            localStorage.removeItem('full_name');
-            window.location.href = '/api/administrator_logout.php';
+            if (confirm('Are you sure you want to log out?')) {
+                localStorage.removeItem('user_id');
+                localStorage.removeItem('role');
+                localStorage.removeItem('full_name');
+                window.location.href = '/api/administrator_logout.php';
+            }
         }
     </script>
 </body>

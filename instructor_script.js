@@ -99,3 +99,12 @@ function loadAssignedClasses() {
         })
         .catch(err => console.error(err));
 }
+
+function confirmLogout() {
+    if (confirm('Are you sure you want to log out?')) {
+        localStorage.removeItem('user_id');
+        localStorage.removeItem('role');
+        localStorage.removeItem('full_name');
+        window.location.href = '/api/instructor_logout.php';
+    }
+}

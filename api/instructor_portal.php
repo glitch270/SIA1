@@ -44,12 +44,7 @@
                     View Assigned Class
                 </button>
 
-                <button class="btn-logout" onclick="
-                    localStorage.removeItem('user_id');
-                    localStorage.removeItem('role');
-                    localStorage.removeItem('full_name');
-                    window.location.href='/api/instructor_logout.php'
-                ">Log Out</button>
+<button class="btn-logout" onclick="confirmLogout()">Log Out</button>
 
             </nav>
 

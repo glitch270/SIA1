@@ -396,11 +396,13 @@ while ($r = mysqli_fetch_assoc($res)) $allRooms[] = $r['room_name'];
         });
 
         function logout() {
-            localStorage.removeItem('user_id');
-            localStorage.removeItem('role');
-            localStorage.removeItem('full_name');
-            window.location.href = '/api/administrator_logout.php';
-        }
+            if (confirm('Are you sure you want to log out?')) {
+                localStorage.removeItem('user_id');
+                localStorage.removeItem('role');
+                localStorage.removeItem('full_name');
+                window.location.href = '/api/administrator_logout.php';
+                }
+            }
     </script>
 </body>
 </html>
