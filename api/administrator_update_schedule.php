@@ -15,13 +15,21 @@ $classrooms = [];
 $res = mysqli_query($conn, "SELECT id, room_name FROM rooms ORDER BY room_name");
 while ($row = mysqli_fetch_assoc($res)) $classrooms[] = $row;
 
-$teachers = [];
-$res = mysqli_query($conn, "
-    SELECT i.instructor_id, u.full_name
-    FROM instructor i JOIN users u ON i.user_id = u.user_id
-    ORDER BY u.full_name
+// Load teachers grouped by department
+$teachersResult = mysqli_query($conn, "
+    SELECT i.instructor_id, i.department, u.full_name 
+    FROM instructor i
+    INNER JOIN users u ON i.user_id = u.user_id
+    ORDER BY i.department, u.full_name
 ");
-while ($row = mysqli_fetch_assoc($res)) $teachers[] = $row;
+$teachersByDepartment = [];
+while ($row = mysqli_fetch_assoc($teachersResult)) {
+    $dept = $row['department'] ?? 'Other';
+    $teachersByDepartment[$dept][] = [
+        'id'   => $row['instructor_id'],
+        'name' => $row['full_name']
+    ];
+}
 
 $courseProgramsResult = mysqli_query($conn, "SELECT * FROM course_program ORDER BY department, program_name");
 $coursesByDepartment = [];
@@ -40,6 +48,9 @@ $departments = [
 
 $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
+// Find the department of the current schedule's course_program
+$currentDepartment = '';
+
 if (isset($_GET['id'])) {
     $id = mysqli_real_escape_string($conn, $_GET['id']);
     $result = mysqli_query($conn, "SELECT s.* FROM schedule s WHERE s.id = '$id'");
@@ -47,6 +58,14 @@ if (isset($_GET['id'])) {
         $selectedSchedule = mysqli_fetch_assoc($result);
         $daysRes = mysqli_query($conn, "SELECT * FROM schedule_days WHERE schedule_id = '$id' ORDER BY id");
         while ($d = mysqli_fetch_assoc($daysRes)) $existingDays[] = $d;
+
+        // Find department from course_program table
+        $cp = mysqli_real_escape_string($conn, $selectedSchedule['course_program'] ?? '');
+        $deptRes = mysqli_query($conn, "SELECT department FROM course_program WHERE program_name = '$cp' LIMIT 1");
+        if ($deptRes && mysqli_num_rows($deptRes) > 0) {
+            $deptRow = mysqli_fetch_assoc($deptRes);
+            $currentDepartment = $deptRow['department'] ?? '';
+        }
     } else {
         $message = "Schedule not found.";
         $messageType = "error";
@@ -81,7 +100,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update'])) {
         ");
 
         if ($update) {
-            // Delete old days and re-insert
             mysqli_query($conn, "DELETE FROM schedule_days WHERE schedule_id = '$scheduleId'");
 
             $hasError = false;
@@ -108,7 +126,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update'])) {
             if (!$hasError) {
                 $message = "Schedule updated successfully!";
                 $messageType = "success";
-                // Reload existing days
                 $existingDays = [];
                 $daysRes = mysqli_query($conn, "SELECT * FROM schedule_days WHERE schedule_id = '$scheduleId' ORDER BY id");
                 while ($d = mysqli_fetch_assoc($daysRes)) $existingDays[] = $d;
@@ -142,19 +159,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update'])) {
         .main { flex: 1; padding: 40px; overflow-y: auto; }
         .main h2 { font-size: 20px; margin-bottom: 25px; color: #000; font-weight: 700; }
         .update-box { background: #e9ecef; border-radius: 8px; padding: 50px 40px; max-width: 1000px; }
-        .update-box p { font-size: 16px; margin-bottom: 30px; color: #333; }
         .btn-back { display: inline-block; background: #ccc; color: #333; padding: 10px 35px; border-radius: 12px; text-decoration: none; font-size: 14px; font-weight: 600; }
         .form-box { background: #d9d9d9; padding: 25px; border-radius: 10px; max-width: 620px; }
         .form-box label { display: block; margin-bottom: 4px; font-weight: 600; color: #333; }
         .form-box select,
         .form-box input[type="text"],
         .form-box input[type="time"] { width: 100%; padding: 10px; margin: 4px 0 14px 0; border-radius: 6px; border: 1px solid #aaa; font-size: 14px; background: white; }
+        .form-box select:disabled,
+        .form-box input:disabled { background: #eee; cursor: not-allowed; }
         .autocomplete-wrapper { position: relative; margin-bottom: 14px; }
         .autocomplete-wrapper input { margin-bottom: 0; width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #aaa; font-size: 14px; background: white; }
         .autocomplete-wrapper input:disabled { background: #eee; cursor: not-allowed; }
         .autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #aaa; border-top: none; border-radius: 0 0 6px 6px; max-height: 200px; overflow-y: auto; z-index: 100; display: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .autocomplete-list div { padding: 10px; cursor: pointer; font-size: 14px; border-bottom: 1px solid #f0f0f0; }
+        .autocomplete-list div:last-child { border-bottom: none; }
         .autocomplete-list div:hover { background: #e9ecef; }
+        .blocked-msg { font-size: 12px; color: #c0392b; font-style: italic; margin-top: -10px; margin-bottom: 14px; }
         .day-entry { background: white; border-radius: 8px; padding: 15px; margin-bottom: 10px; position: relative; }
         .day-entry select, .day-entry input { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #aaa; margin-bottom: 10px; font-size: 14px; }
         .time-row { display: flex; gap: 15px; }
@@ -175,7 +195,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update'])) {
         .btn-logout { background-color: #1e235e; color: #fff; border: none; padding: 12px 3px; border-radius: 5px; font-weight: 700; cursor: pointer; width: 100%; text-align: center; margin-top: 30px; transition: 0.3s; }
         .btn-logout:hover { background-color: #d32f2f; }
         .section-label { font-size: 13px; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: block; }
-        .no-courses-msg { font-size: 13px; color: #888; font-style: italic; margin-top: -10px; margin-bottom: 14px; }
     </style>
 </head>
 <body>
@@ -219,14 +238,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update'])) {
                 <form method="POST" action="" id="updateForm">
                     <input type="hidden" name="schedule_id" value="<?php echo htmlspecialchars($selectedSchedule['id']); ?>">
 
-                    <!-- SUBJECT AUTOCOMPLETE -->
+                    <!-- DEPARTMENT -->
+                    <label>Department</label>
+                    <select name="department" id="departmentSelect" required onchange="onDepartmentChange()">
+                        <option value="">Select a department</option>
+                        <?php foreach ($departments as $dept): ?>
+                            <option value="<?php echo htmlspecialchars($dept); ?>"
+                                <?php echo ($currentDepartment === $dept) ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($dept); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+
+                    <!-- COURSE / PROGRAM -->
+                    <label>Course / Program</label>
+                    <div class="autocomplete-wrapper">
+                        <input type="text" name="course_program" id="courseProgramInput"
+                            placeholder="Select department first..." autocomplete="off" required
+                            value="<?php echo htmlspecialchars($selectedSchedule['course_program'] ?? ''); ?>">
+                        <div class="autocomplete-list" id="courseProgramList"></div>
+                    </div>
+                    <p class="blocked-msg" id="noCoursesMsg" style="display:none;">
+                        No courses yet for this department.
+                    </p>
+
+                    <!-- SUBJECT -->
                     <label>Subject</label>
-                    <input type="hidden" name="subject" id="subjectHidden" value="<?php echo htmlspecialchars($selectedSchedule['subject_id'] ?? ''); ?>">
+                    <input type="hidden" name="subject" id="subjectHidden"
+                        value="<?php echo htmlspecialchars($selectedSchedule['subject_id'] ?? ''); ?>">
                     <div class="autocomplete-wrapper">
                         <input type="text" id="subjectInput" autocomplete="off"
                             placeholder="Type subject code or name..."
                             value="<?php
-                                // Show current subject name
                                 foreach ($subjects as $subj) {
                                     if ($subj['id'] == $selectedSchedule['subject_id']) {
                                         echo htmlspecialchars($subj['course_code'] . ' - ' . $subj['description']);
@@ -239,41 +282,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update'])) {
 
                     <!-- TEACHER -->
                     <label>Teacher</label>
-                    <select name="teacher">
-                        <?php foreach ($teachers as $t): ?>
-                            <option value="<?php echo $t['instructor_id']; ?>"
-                                <?php echo ($selectedSchedule['instructor_id'] == $t['instructor_id']) ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($t['full_name']); ?>
-                            </option>
-                        <?php endforeach; ?>
+                    <select name="teacher" id="teacherSelect" required>
+                        <option value="">Select a teacher</option>
                     </select>
-
-                    <!-- DEPARTMENT -->
-                    <label>Department</label>
-                    <select name="department" id="departmentSelect" required onchange="filterCourses()">
-                        <option value="">Select a department</option>
-                        <?php foreach ($departments as $dept): ?>
-                            <option value="<?php echo htmlspecialchars($dept); ?>">
-                                <?php echo htmlspecialchars($dept); ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-
-                    <!-- COURSE / PROGRAM -->
-                    <label>Course / Program</label>
-                    <div class="autocomplete-wrapper">
-                        <input type="text" name="course_program" id="courseProgramInput"
-                            placeholder="Select department first..." autocomplete="off" required disabled
-                            value="<?php echo htmlspecialchars($selectedSchedule['course_program'] ?? ''); ?>">
-                        <div class="autocomplete-list" id="courseProgramList"></div>
-                    </div>
-                    <p class="no-courses-msg" id="noCoursesMsg" style="display:none;">
-                        No courses yet for this department. You can type one manually.
-                    </p>
 
                     <!-- CLASSROOM -->
                     <label>Classroom</label>
-                    <select name="classroom">
+                    <select name="classroom" required>
                         <?php foreach ($classrooms as $r): ?>
                             <option value="<?php echo $r['id']; ?>"
                                 <?php echo ($selectedSchedule['room_id'] == $r['id']) ? 'selected' : ''; ?>>
@@ -305,16 +320,101 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update'])) {
     </main>
 
     <script>
-        // ---- SUBJECT AUTOCOMPLETE ----
-        const subjectData   = <?php echo json_encode($subjects); ?>;
+        const coursesByDepartment  = <?php echo json_encode($coursesByDepartment); ?>;
+        const teachersByDepartment = <?php echo json_encode($teachersByDepartment); ?>;
+        const subjectData          = <?php echo json_encode($subjects); ?>;
+
+        const deptSelect    = document.getElementById('departmentSelect');
+        const cpInput       = document.getElementById('courseProgramInput');
+        const cpList        = document.getElementById('courseProgramList');
+        const noCoursesMsg  = document.getElementById('noCoursesMsg');
         const subjectInput  = document.getElementById('subjectInput');
         const subjectList   = document.getElementById('subjectList');
         const subjectHidden = document.getElementById('subjectHidden');
+        const teacherSelect = document.getElementById('teacherSelect');
 
+        let currentCourses = [];
+
+        // Pre-fill teachers and courses based on current department on page load
+        const currentDept    = <?php echo json_encode($currentDepartment); ?>;
+        const currentTeacher = <?php echo json_encode($selectedSchedule['instructor_id'] ?? ''); ?>;
+
+        function populateTeachers(dept, selectedId = null) {
+            teacherSelect.innerHTML = '<option value="">Select a teacher</option>';
+            const teachers = teachersByDepartment[dept] || Object.values(teachersByDepartment).flat();
+            teachers.forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t.id;
+                opt.textContent = t.name;
+                if (selectedId && t.id == selectedId) opt.selected = true;
+                teacherSelect.appendChild(opt);
+            });
+        }
+
+        function populateCourses(dept) {
+            currentCourses = coursesByDepartment[dept] || [];
+            if (currentCourses.length === 0) {
+                cpInput.disabled = true;
+                cpInput.placeholder = 'No courses available...';
+                noCoursesMsg.style.display = 'block';
+            } else {
+                cpInput.disabled = false;
+                cpInput.placeholder = 'Type to search course...';
+                noCoursesMsg.style.display = 'none';
+            }
+        }
+
+        // On page load, pre-fill department, courses, teachers
+        if (currentDept) {
+            populateCourses(currentDept);
+            populateTeachers(currentDept, currentTeacher);
+        }
+
+        function onDepartmentChange() {
+            const dept = deptSelect.value;
+            cpInput.value = '';
+            cpList.style.display = 'none';
+
+            if (!dept) {
+                cpInput.disabled = true;
+                cpInput.placeholder = 'Select department first...';
+                noCoursesMsg.style.display = 'none';
+                teacherSelect.innerHTML = '<option value="">Select a teacher</option>';
+                return;
+            }
+
+            populateCourses(dept);
+            populateTeachers(dept);
+        }
+
+        // Course/Program autocomplete
+        function showCourseMatches(val) {
+            cpList.innerHTML = '';
+            const matches = val
+                ? currentCourses.filter(p => p.toLowerCase().includes(val))
+                : currentCourses;
+            if (matches.length === 0) { cpList.style.display = 'none'; return; }
+            matches.forEach(p => {
+                const div = document.createElement('div');
+                div.textContent = p;
+                div.onclick = () => { cpInput.value = p; cpList.style.display = 'none'; };
+                cpList.appendChild(div);
+            });
+            cpList.style.display = 'block';
+        }
+
+        if (cpInput) {
+            cpInput.addEventListener('input', function () { showCourseMatches(this.value.trim().toLowerCase()); });
+            cpInput.addEventListener('focus', function () { showCourseMatches(this.value.trim().toLowerCase()); });
+        }
+
+        // Subject autocomplete
         function showSubjectMatches(val) {
             subjectList.innerHTML = '';
             const matches = val
-                ? subjectData.filter(s => s.course_code.toLowerCase().includes(val) || s.description.toLowerCase().includes(val))
+                ? subjectData.filter(s =>
+                    s.course_code.toLowerCase().includes(val) ||
+                    s.description.toLowerCase().includes(val))
                 : subjectData;
             if (matches.length === 0) { subjectList.style.display = 'none'; return; }
             matches.forEach(s => {
@@ -340,60 +440,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update'])) {
             });
         }
 
-        // ---- COURSE/PROGRAM AUTOCOMPLETE ----
-        const coursesByDepartment = <?php echo json_encode($coursesByDepartment); ?>;
-        const cpInput      = document.getElementById('courseProgramInput');
-        const cpList       = document.getElementById('courseProgramList');
-        const deptSelect   = document.getElementById('departmentSelect');
-        const noCoursesMsg = document.getElementById('noCoursesMsg');
-        let currentCourses = [];
-
-        function filterCourses() {
-            const dept = deptSelect.value;
-            cpList.innerHTML = '';
-            cpList.style.display = 'none';
-            if (!dept) {
-                cpInput.disabled = true;
-                cpInput.placeholder = 'Select department first...';
-                noCoursesMsg.style.display = 'none';
-                return;
-            }
-            currentCourses = coursesByDepartment[dept] || [];
-            cpInput.disabled = false;
-            if (currentCourses.length === 0) {
-                cpInput.placeholder = 'Type course manually...';
-                noCoursesMsg.style.display = 'block';
-            } else {
-                cpInput.placeholder = 'Type to search course...';
-                noCoursesMsg.style.display = 'none';
-            }
-        }
-
-        function showCourseMatches(val) {
-            cpList.innerHTML = '';
-            if (currentCourses.length === 0) { cpList.style.display = 'none'; return; }
-            const matches = val ? currentCourses.filter(p => p.toLowerCase().includes(val)) : currentCourses;
-            if (matches.length === 0) { cpList.style.display = 'none'; return; }
-            matches.forEach(p => {
-                const div = document.createElement('div');
-                div.textContent = p;
-                div.onclick = () => { cpInput.value = p; cpList.style.display = 'none'; };
-                cpList.appendChild(div);
-            });
-            cpList.style.display = 'block';
-        }
-
-        if (cpInput) {
-            cpInput.addEventListener('input', function () { showCourseMatches(this.value.trim().toLowerCase()); });
-            cpInput.addEventListener('focus', function () { showCourseMatches(this.value.trim().toLowerCase()); });
-        }
-
+        // Close dropdowns on outside click
         document.addEventListener('click', function (e) {
             if (subjectInput && !subjectInput.contains(e.target) && !subjectList.contains(e.target)) subjectList.style.display = 'none';
             if (cpInput && !cpInput.contains(e.target) && !cpList.contains(e.target)) cpList.style.display = 'none';
         });
 
-        // ---- DAYS & TIMES ----
+        // Days & Times
         const days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
         let dayCount = 0;
 
@@ -436,6 +489,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update'])) {
         } else {
             addDayEntry();
         }
+
+        // Form validation
+        document.getElementById('updateForm').addEventListener('submit', function (e) {
+            if (!subjectHidden.value) {
+                e.preventDefault();
+                alert('Please select a subject from the list.');
+                subjectInput.focus();
+            }
+        });
 
         function logout() {
             if (confirm('Are you sure you want to log out?')) {
